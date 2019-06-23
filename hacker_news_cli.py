@@ -9,41 +9,49 @@ import requests
 from urllib.request import urlopen
 from bs4 import BeautifulSoup
 
-top_stories = requests.get('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
-top_stories_str = top_stories.text
-top_stories_json = top_stories.json()
-
-# https://hacker-news.firebaseio.com/v0/item/8863.json?print=pretty
-
 story_content = []
 story_title = []
-story_count = 0
 story_link = []
-for id in top_stories_json:
-    url = 'https://hacker-news.firebaseio.com/v0/item/' + str(id) + '.json?print=pretty'
-    story = requests.get(url)
-    story_json = story.json()
-    # print(story_json['title'])
-    story_title.append(story_json['title'])
-    try:
-        story_url = story_json['url']
-        story_link.append(story_url)
-        story_html = requests.get(story_url).content
-        story_content.append(story_html)
-    except:
-        story_content.append("nothing to see here, sorry")
-    print("loading...")
-    # story_title.append(story_json['title'])
-    # print(id)
-    story_count = story_count + 1
-    if story_count >= 5:
-        break
 
-'''
-for title in story_title:
-    print(title)
-    print("")
-'''
+def get_top_stories(first_story_index, last_story_index):
+
+    global story_content
+    global story_title
+    global story_count
+    global story_link
+
+    story_content = []
+    story_title = []
+    story_count = -1
+    story_link = []
+
+    top_stories = requests.get('https://hacker-news.firebaseio.com/v0/topstories.json?print=pretty')
+    top_stories_str = top_stories.text
+    top_stories_json = top_stories.json()
+
+    for id in top_stories_json:
+
+        story_count = story_count + 1
+
+        if story_count < first_story_index:
+            continue
+        elif story_count > last_story_index:
+            break
+
+        url = 'https://hacker-news.firebaseio.com/v0/item/' + str(id) + '.json?print=pretty'
+        story = requests.get(url)
+        story_json = story.json()
+        story_title.append(story_json['title'])
+
+        try:
+            story_url = story_json['url']
+            story_link.append(story_url)
+            story_html = requests.get(story_url).content
+            story_content.append(story_html)
+        except:
+            story_content.append("nothing to see here, sorry")
+
+        print("loading...")
 
 def show_titles():
     global story_title
@@ -51,6 +59,7 @@ def show_titles():
         print(story_title)
 
 def show_story(raw_html):
+
     story_beautiful_soup = BeautifulSoup(raw_html, 'html.parser')
 
     ptag = story_beautiful_soup.find_all('p')
@@ -80,11 +89,46 @@ def select_story(selection):
     global story_content
     show_story(story_content[selection])
 
-i = 0
-for title in story_title:
-    print(str(i) + ": " + title)
-    i = i + 1
+def show_top_stories():
+    i = 0
+    for title in story_title:
+        print(str(i) + ": " + title)
+        i = i + 1
 
-story_selected = input("Select Story To Read: ")
-story_selected = int(story_selected)
-select_story(story_selected)
+keep_reading = True
+while keep_reading == True:
+
+    page = input('Which page of stories would you like to view?: ')
+    page = int(page)
+
+    if page == 1:
+        get_top_stories(0, 9)
+    elif page == 2:
+        get_top_stories(10, 19)
+    elif page == 3:
+        get_top_stories(20, 29)
+    elif page == 4:
+        get_top_stories(30, 39)
+    elif page == 5:
+        get_top_stories(40, 49)
+    elif page == 6:
+        get_top_stories(50, 59)
+    elif page == 7:
+        get_top_stories(60, 69)
+    elif page == 8:
+        get_top_stories(70, 79)
+    elif page == 9:
+        get_top_stories(80, 89)
+    elif page == 10:
+        get_top_stories(90, 99)
+
+    show_top_stories()
+    story_selected = input("Select Story To Read: ")
+    story_selected = int(story_selected)
+    select_story(story_selected)
+    keep_reading = input('Keep reading? Enter y for yes, no for no:')
+
+    if keep_reading == "no" or keep_reading == "n":
+        keep_reading = False
+    else:
+        keep_reading = True
