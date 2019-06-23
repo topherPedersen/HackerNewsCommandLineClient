@@ -1,6 +1,9 @@
 # REFERENCE (python requests): https://realpython.com/python-requests/
 # REFERENCE (Hacker News API): https://github.com/HackerNews/API
 
+print("Hacker News CLI by Topher Pedersen")
+print("loading...")
+
 from lxml import html
 import requests
 from urllib.request import urlopen
